@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
-
+import { Usuario } from '../models/Usuario';
 // Interface para o usuário
 interface User {
   id: number;
@@ -27,38 +26,21 @@ export class AuthController {
         return;
       }
 
-      const { email, password } = req.body;
+      const { nome, email, senha, tipo } = req.body;
 
-      // Verifica se o usuário já existe
-      const userExists = users.find(user => user.email === email);
-      if (userExists) {
-        res.status(400).json({ error: 'Usuário já existe' });
-        return;
-      }
-
-      // Criptografa a senha
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Cria o novo usuário
-      const user: User = {
-        id: users.length + 1,
-        email,
-        password: hashedPassword,
-      };
-
-      users.push(user);
+      const novoUsuario = await Usuario.registrar({ nome, email, senha, tipo });
 
       // Gera o token JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: novoUsuario.id, email: novoUsuario.email },
         process.env.JWT_SECRET || 'default_secret',
         { expiresIn: '1d' }
       );
 
       res.status(201).json({
         user: {
-          id: user.id,
-          email: user.email,
+          id: novoUsuario.id,
+          email: novoUsuario.email,
         },
         token,
       });
