@@ -39,7 +39,7 @@ router.post(
   '/register',
   [
     body('email').isEmail().withMessage('Email inválido'),
-    body('password').isLength({ min: 6 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
+    body('password').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
   ],
   authController.register
 );
