@@ -1,85 +1,50 @@
+// src/routes/auth.ts
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { AuthController } from '../controllers/authController';
+import { 
+    registrar, 
+    login, 
+    solicitarRecuperacaoSenha, 
+    resetarSenha 
+} from '../controllers/AuthController';
 
 const router = Router();
-const authController = new AuthController();
 
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Registra um novo usuário
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 minLength: 6
- *     responses:
- *       201:
- *         description: Usuário registrado com sucesso
- *       400:
- *         description: Dados inválidos ou usuário já existe
- *       500:
- *         description: Erro interno do servidor
- */
 router.post(
-  '/register',
-  [
-    body('email').isEmail().withMessage('Email inválido'),
-    body('password').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
-  ],
-  authController.register
+    '/registrar',
+    [
+        body('nome').notEmpty().withMessage('Nome é obrigatório'),
+        body('email').isEmail().withMessage('Email inválido'),
+        body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+        body('tipo').notEmpty().withMessage('Tipo de usuário é obrigatório')
+    ],
+    registrar
 );
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Autentica um usuário
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login realizado com sucesso
- *       401:
- *         description: Credenciais inválidas
- *       500:
- *         description: Erro interno do servidor
- */
 router.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Email inválido'),
-    body('password').notEmpty().withMessage('Senha é obrigatória'),
-  ],
-  authController.login
+    '/login',
+    [
+        body('email').isEmail().withMessage('Email inválido'),
+        body('senha').notEmpty().withMessage('Senha é obrigatória')
+    ],
+    login
 );
 
-export default router; 
+router.post(
+    '/recuperar-senha',
+    [
+        body('email').isEmail().withMessage('E-mail inválido')
+    ],
+    solicitarRecuperacaoSenha
+);
+
+router.post(
+    '/resetar-senha',
+    [
+        body('token').notEmpty().withMessage('Token é obrigatório'),
+        body('novaSenha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
+    ],
+    resetarSenha
+);
+
+export default router;

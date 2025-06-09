@@ -1,101 +1,100 @@
-import { Request, Response, NextFunction } from 'express';
+// src/controllers/AuthController.ts
+import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Usuario from '../models/Usuario';
 import { validationResult } from 'express-validator';
-import { Usuario } from '../models/Usuario';
-// Interface para o usuário
-interface User {
-  id: number;
-  email: string;
-  password: string;
-}
+import { enviarEmailRecuperacao } from '../services/emailService';
 
-// Simulação de banco de dados (substitua por sua implementação real)
-let users: User[] = [];
-
-export class AuthController {
-  /**
-   * Registra um novo usuário
-   * @route POST /auth/register
-   */
-  register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      // Valida os dados da requisição
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+export const registrar = async (req: Request, res: Response): Promise<void> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
         return;
-      }
-
-      const { nome, email, senha, tipo } = req.body;
-
-      const novoUsuario = await Usuario.registrar({ nome, email, senha, tipo });
-
-      // Gera o token JWT
-      const token = jwt.sign(
-        { id: novoUsuario.id, email: novoUsuario.email },
-        process.env.JWT_SECRET || 'default_secret',
-        { expiresIn: '1d' }
-      );
-
-      res.status(201).json({
-        user: {
-          id: novoUsuario.id,
-          email: novoUsuario.email,
-        },
-        token,
-      });
-    } catch (error) {
-      console.error('Erro ao registrar usuário:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  }
 
-  /**
-   * Autentica um usuário
-   * @route POST /auth/login
-   */
-  login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Valida os dados da requisição
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+        const { nome, email, senha, tipo } = req.body;
+        const usuario = await Usuario.registrar({ nome, email, senha, tipo });
+        res.status(201).json(usuario);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao registrar usuário' });
+    }
+};
+
+export const login = async (req: Request, res: Response): Promise<void> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
         return;
-      }
-
-      const { email, password } = req.body;
-
-      // Busca o usuário
-      const user = users.find(user => user.email === email);
-      if (!user) {
-        res.status(401).json({ error: 'Credenciais inválidas' });
-        return;
-      }
-
-      // Verifica a senha
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        res.status(401).json({ error: 'Credenciais inválidas' });
-        return;
-      }
-
-      // Gera o token JWT
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET || 'default_secret',
-        { expiresIn: '1d' }
-      );
-
-      res.json({
-        user: {
-          id: user.id,
-          email: user.email,
-        },
-        token,
-      });
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  }
-} 
+
+    try {
+        const { email, senha } = req.body;
+        const usuario = await Usuario.findOne({ where: { email } });
+        
+        if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
+            res.status(401).json({ error: 'Credenciais inválidas' });
+            return;
+        }
+
+        const token = jwt.sign(
+            { id: usuario.id, email: usuario.email },
+            process.env.JWT_SECRET || 'secret_key',
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao fazer login' });
+    }
+};
+
+export const solicitarRecuperacaoSenha = async (req: Request, res: Response): Promise<void> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
+
+    try {
+        const { email } = req.body;
+        const token = await Usuario.gerarTokenRecuperacao(email);
+
+        if (!token) {
+            res.status(404).json({ error: 'E-mail não encontrado' });
+            return;
+        }
+
+        await enviarEmailRecuperacao(email, token);
+        res.json({ message: 'Código de recuperação enviado para seu e-mail' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao processar solicitação' });
+    }
+};
+
+export const resetarSenha = async (req: Request, res: Response): Promise<void> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
+
+    try {
+        const { token, novaSenha } = req.body;
+        const sucesso = await Usuario.resetarSenha(token, novaSenha);
+
+        if (!sucesso) {
+            res.status(400).json({ error: 'Token inválido ou expirado' });
+            return;
+        }
+
+        res.json({ message: 'Senha redefinida com sucesso' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao redefinir senha' });
+    }
+};
