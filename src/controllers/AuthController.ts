@@ -12,7 +12,6 @@ export const registrar = async (req: Request, res: Response): Promise<void> => {
         res.status(400).json({ errors: errors.array() });
         return;
     }
-
     try {
         const { nome, email, senha, tipo } = req.body;
         const usuario = await Usuario.registrar({ nome, email, senha, tipo });

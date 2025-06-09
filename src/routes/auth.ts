@@ -46,5 +46,4 @@ router.post(
     ],
     resetarSenha
 );
-
 export default router;

@@ -130,5 +130,4 @@ export function initUsuarioModel(sequelize: Sequelize) {
     );
     return Usuario;
 }
-
 export default Usuario;

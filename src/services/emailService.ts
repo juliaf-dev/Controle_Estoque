@@ -11,7 +11,6 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
-
 export const enviarEmailRecuperacao = async (email: string, token: string): Promise<void> => {
     try {
         const mailOptions = {
