@@ -52,29 +52,31 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const solicitarRecuperacaoSenha = async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+
+  try {
+    const { email } = req.body;
+    const token = await Usuario.gerarTokenRecuperacao(email);
+
+    if (!token) {
+      res.status(404).json({ error: 'E-mail não encontrado' });
+      return;
     }
 
-    try {
-        const { email } = req.body;
-        const token = await Usuario.gerarTokenRecuperacao(email);
-
-        if (!token) {
-            res.status(404).json({ error: 'E-mail não encontrado' });
-            return;
-        }
-
-        await enviarEmailRecuperacao(email, token);
-        res.json({ message: 'Código de recuperação enviado para seu e-mail' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erro ao processar solicitação' });
-    }
+    await enviarEmailRecuperacao(email, token);
+    res.json({ message: 'Link de recuperação enviado para seu e-mail' });
+  } catch (error) {
+    console.error('Erro na recuperação de senha:', error);
+    res.status(500).json({ 
+      error: 'Erro ao processar solicitação',
+      details: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
+  }
 };
-
 export const resetarSenha = async (req: Request, res: Response): Promise<void> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

@@ -1,10 +1,7 @@
-// src/models/Usuario.ts
 import { Model, DataTypes, Optional } from 'sequelize';
 import bcrypt from 'bcryptjs';
-import { Sequelize } from 'sequelize';
-
-// Adicione esta linha para importar o Op corretamente
-import { Op } from 'sequelize';
+import { Sequelize, Op } from 'sequelize';
+import { randomBytes } from 'crypto';
 
 interface UsuarioAttributes {
     id: number;
@@ -12,13 +9,14 @@ interface UsuarioAttributes {
     senha: string;
     email: string;
     tipo: string;
-    tokenRecuperacaoSenha: string | null;
-    tokenExpiracao: Date | null;
-    tentativasLogin: number;
+    token_recuperacao_senha: string | null;
+    token_expiracao: Date | null;
+    tentativas_login: number;
+    refresh_token: string | null;
 }
 
 interface UsuarioCreationAttributes
-    extends Optional<UsuarioAttributes, 'id' | 'tokenRecuperacaoSenha' | 'tokenExpiracao' | 'tentativasLogin'> { }
+    extends Optional<UsuarioAttributes, 'id' | 'token_recuperacao_senha' | 'token_expiracao' | 'tentativas_login' | 'refresh_token'> {}
 
 class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     implements UsuarioAttributes {
@@ -27,21 +25,25 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     public senha!: string;
     public email!: string;
     public tipo!: string;
-    public tokenRecuperacaoSenha!: string | null;
-    public tokenExpiracao!: Date | null;
-    public tentativasLogin!: number;
+    public token_recuperacao_senha!: string | null;
+    public token_expiracao!: Date | null;
+    public tentativas_login!: number;
+    public refresh_token!: string | null;
 
-    static async registrar(dados: { nome: string; email: string; senha: string; tipo: string }) {
-        const { nome, email, senha, tipo } = dados;
-        const senhaHash = await bcrypt.hash(senha, 10);
+    static async registrar(dados: { nome: string; email: string; senha: string; tipo?: string }) {
+        const isFirstUser = (await Usuario.count()) === 0;
+        const tipo = isFirstUser ? 'admin' : dados.tipo || 'user';
+        
+        const senhaHash = await bcrypt.hash(dados.senha, 12);
         return await Usuario.create({
-            nome,
-            email,
+            nome: dados.nome,
+            email: dados.email,
             senha: senhaHash,
             tipo,
-            tentativasLogin: 0,
-            tokenRecuperacaoSenha: null,
-            tokenExpiracao: null
+            tentativas_login: 0,
+            token_recuperacao_senha: null,
+            token_expiracao: null,
+            refresh_token: null
         });
     }
 
@@ -49,13 +51,12 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
         const usuario = await Usuario.findOne({ where: { email } });
         if (!usuario) return null;
 
-        const token = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiracao = new Date();
-        expiracao.setHours(expiracao.getHours() + 1);
+        const token = randomBytes(32).toString('hex');
+        const expiracao = new Date(Date.now() + 3600000); // 1 hora
 
         await usuario.update({
-            tokenRecuperacaoSenha: token,
-            tokenExpiracao: expiracao
+            token_recuperacao_senha: token,
+            token_expiracao: expiracao
         });
 
         return token;
@@ -64,18 +65,18 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     static async resetarSenha(token: string, novaSenha: string): Promise<boolean> {
         const usuario = await Usuario.findOne({ 
             where: { 
-                tokenRecuperacaoSenha: token,
-                tokenExpiracao: { [Op.gt]: new Date() } // Usando Op corretamente
+                token_recuperacao_senha: token,
+                token_expiracao: { [Op.gt]: new Date() }
             } 
         });
 
         if (!usuario) return false;
 
-        const senhaHash = await bcrypt.hash(novaSenha, 10);
+        const senhaHash = await bcrypt.hash(novaSenha, 12);
         await usuario.update({
             senha: senhaHash,
-            tokenRecuperacaoSenha: null,
-            tokenExpiracao: null
+            token_recuperacao_senha: null,
+            token_expiracao: null
         });
 
         return true;
@@ -86,7 +87,7 @@ export function initUsuarioModel(sequelize: Sequelize) {
     Usuario.init(
         {
             id: {
-                type: DataTypes.INTEGER.UNSIGNED,
+                type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true
             },
@@ -106,28 +107,40 @@ export function initUsuarioModel(sequelize: Sequelize) {
             },
             tipo: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: false,
+                defaultValue: 'user'
             },
-            tokenRecuperacaoSenha: {
+            token_recuperacao_senha: {
                 type: DataTypes.STRING,
-                allowNull: true
+                allowNull: true,
+                field: 'token_recuperacao_senha'
             },
-            tokenExpiracao: {
+            token_expiracao: {
                 type: DataTypes.DATE,
-                allowNull: true
+                allowNull: true,
+                field: 'token_expiracao'
             },
-            tentativasLogin: {
+            tentativas_login: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue: 0
+                defaultValue: 0,
+                field: 'tentativas_login'
+            },
+            refresh_token: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                field: 'refresh_token'
             }
         },
         {
             sequelize,
             modelName: 'Usuario',
-            tableName: 'usuarios'
+            tableName: 'usuarios',
+            underscored: true,
+            timestamps: true
         }
     );
     return Usuario;
 }
+
 export default Usuario;

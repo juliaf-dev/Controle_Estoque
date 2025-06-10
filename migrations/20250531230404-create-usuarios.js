@@ -1,7 +1,5 @@
 'use strict';
 
-const { type } = require('os');
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -28,20 +26,39 @@ module.exports = {
       tipo: {
         type: Sequelize.STRING,
         allowNull: false,
+        defaultValue: 'user'
       },
-      tokenRecuperacaoSenha: {
+      token_recuperacao_senha: {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      tentativasLogin: {
+      token_expiracao: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      tentativas_login: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
         allowNull: false
+      },
+      refresh_token: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
       }
     });
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('usuarios');
-  },
+  }
 };
