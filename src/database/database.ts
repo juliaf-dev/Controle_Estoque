@@ -18,4 +18,4 @@ sequelize
   .then(() => console.log("Conectado ao MySQL!"))
   .catch((err: any) => console.error("Erro na conexão:", err));
 
-module.exports = sequelize;
+export default sequelize;

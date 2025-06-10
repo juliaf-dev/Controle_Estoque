@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { AuthController } from '../controllers/authController';
+import { AuthController } from '../controllers/AuthController';
 
 const router = Router();
 const authController = new AuthController();
@@ -18,15 +18,23 @@ const authController = new AuthController();
  *           schema:
  *             type: object
  *             required:
+ *               - nome
  *               - email
- *               - password
+ *               - senha
+ *               - tipo
  *             properties:
+ *               nome:
+ *                 type: string
  *               email:
  *                 type: string
  *                 format: email
- *               password:
+ *               senha:
  *                 type: string
- *                 minLength: 6
+ *                 minLength: 8
+ *               tipo:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 1
  *     responses:
  *       201:
  *         description: Usuário registrado com sucesso
@@ -39,7 +47,11 @@ router.post(
   '/register',
   [
     body('email').isEmail().withMessage('Email inválido'),
-    body('password').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
+    body('senha').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
+    body('nome').notEmpty().withMessage('Nome é obrigatório'),
+    body('tipo')
+      .isIn(['A', 'U'])
+      .withMessage('Tipo deve ser "A" para administrador ou "U" para usuário comum'),
   ],
   authController.register
 );

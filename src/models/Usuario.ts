@@ -65,7 +65,7 @@ export function initUsuarioModel(sequelize: Sequelize) {
                 validate: { isEmail: true }
             },
             tipo: {
-                type: DataTypes.STRING,
+                type: DataTypes.ENUM('A', 'U'),
                 allowNull: false
             },
             tokenRecuperacaoSenha: {

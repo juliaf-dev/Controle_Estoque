@@ -1,25 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { validationResult } from 'express-validator';
-import { Usuario } from '../models/Usuario';
-// Interface para o usuário
-interface User {
-  id: number;
-  email: string;
-  password: string;
-}
-
-// Simulação de banco de dados (substitua por sua implementação real)
-let users: User[] = [];
+import Usuario from '../models/Usuario';
 
 export class AuthController {
-  /**
-   * Registra um novo usuário
-   * @route POST /auth/register
-   */
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Valida os dados da requisição
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
@@ -30,7 +17,6 @@ export class AuthController {
 
       const novoUsuario = await Usuario.registrar({ nome, email, senha, tipo });
 
-      // Gera o token JWT
       const token = jwt.sign(
         { id: novoUsuario.id, email: novoUsuario.email },
         process.env.JWT_SECRET || 'default_secret',
@@ -48,38 +34,30 @@ export class AuthController {
       console.error('Erro ao registrar usuário:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  }
+  };
 
-  /**
-   * Autentica um usuário
-   * @route POST /auth/login
-   */
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Valida os dados da requisição
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
         return;
       }
 
-      const { email, password } = req.body;
+      const { email, senha } = req.body; // Alterado para "senha"
 
-      // Busca o usuário
-      const user = users.find(user => user.email === email);
+      const user = await Usuario.findOne({ where: { email } });
       if (!user) {
         res.status(401).json({ error: 'Credenciais inválidas' });
         return;
       }
 
-      // Verifica a senha
-      const validPassword = await bcrypt.compare(password, user.password);
+      const validPassword = await bcrypt.compare(senha, user.senha);
       if (!validPassword) {
         res.status(401).json({ error: 'Credenciais inválidas' });
         return;
       }
 
-      // Gera o token JWT
       const token = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET || 'default_secret',
@@ -97,5 +75,5 @@ export class AuthController {
       console.error('Erro ao fazer login:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  }
-} 
+  };
+}
