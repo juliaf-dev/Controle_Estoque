@@ -8,8 +8,8 @@ const sequelize = new Sequelize({
   password: "",
   database: "controle_estoque",
   define: {
-    timestamps: true,
-    underscored: true,
+    timestamps: false,
+    underscored: false,
   },
 });
 

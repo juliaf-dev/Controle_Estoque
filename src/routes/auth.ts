@@ -70,12 +70,12 @@ router.post(
  *             type: object
  *             required:
  *               - email
- *               - password
+ *               - senha
  *             properties:
  *               email:
  *                 type: string
  *                 format: email
- *               password:
+ *               senha:
  *                 type: string
  *     responses:
  *       200:
@@ -89,7 +89,7 @@ router.post(
   '/login',
   [
     body('email').isEmail().withMessage('Email inválido'),
-    body('password').notEmpty().withMessage('Senha é obrigatória'),
+    body('senha').notEmpty().withMessage('Senha é obrigatória'),
   ],
   authController.login
 );

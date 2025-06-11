@@ -29,11 +29,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      tokenRecuperacaoSenha: {
+       token_recuperacao_senha: {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      tentativasLogin: {
+      tentativas_login: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
         allowNull: false

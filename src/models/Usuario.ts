@@ -7,12 +7,12 @@ interface UsuarioAttributes {
     senha: string;
     email: string;
     tipo: string;
-    tokenRecuperacaoSenha: string;
-    tentativasLogin: number;
+    token_recuperacao_senha: string;
+    tentativas_login: number;
 }
 
 interface UsuarioCreationAttributes
-    extends Optional<UsuarioAttributes, 'id' | 'tokenRecuperacaoSenha' | 'tentativasLogin'> { }
+    extends Optional<UsuarioAttributes, 'id' | 'token_recuperacao_senha' | 'tentativas_login'> { }
 
 class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     implements UsuarioAttributes {
@@ -21,8 +21,8 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
     public senha!: string;
     public email!: string;
     public tipo!: string;
-    public tokenRecuperacaoSenha!: string;
-    public tentativasLogin!: number;
+    public token_recuperacao_senha!: string;
+    public tentativas_login!: number;
 
     static async registrar(dados: { nome: string; email: string; senha: string; tipo: string }) {
         const { nome, email, senha, tipo } = dados;
@@ -34,10 +34,21 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
             email,
             senha: senhaHash,
             tipo,
-            tentativasLogin: 0,
-            tokenRecuperacaoSenha: ''
+            tentativas_login: 0,
+            token_recuperacao_senha: ''
         });
 
+        return usuario;
+    }
+
+    static async aumentarTentativasLogin(email: string) {
+        const usuario = await Usuario.findOne({ where: { email } });
+        if (!usuario) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        usuario.tentativas_login += 1;
+        await usuario.save();
         return usuario;
     }
 }
@@ -68,12 +79,12 @@ export function initUsuarioModel(sequelize: Sequelize) {
                 type: DataTypes.ENUM('A', 'U'),
                 allowNull: false
             },
-            tokenRecuperacaoSenha: {
+            token_recuperacao_senha: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 defaultValue: ''
             },
-            tentativasLogin: {
+            tentativas_login: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0
