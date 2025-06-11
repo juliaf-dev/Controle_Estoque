@@ -62,7 +62,6 @@ export class AuthController {
 
       const user = await Usuario.findOne({ where: { email } });
       if (!user) {
-        Usuario.aumentarTentativasLogin(email);
         res.status(401).json({ error: "Credenciais inválidas" });
         return;
       }
@@ -74,6 +73,7 @@ export class AuthController {
 
       const validPassword = await bcrypt.compare(senha, user.senha);
       if (!validPassword) {
+        Usuario.aumentarTentativasLogin(email);
         res.status(401).json({ error: "Credenciais inválidas" });
         return;
       }
