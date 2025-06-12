@@ -32,7 +32,7 @@ class Usuario extends Model<UsuarioAttributes, UsuarioCreationAttributes>
 
     static async registrar(dados: { nome: string; email: string; senha: string; tipo?: string }) {
         const isFirstUser = (await Usuario.count()) === 0;
-        const tipo = isFirstUser ? 'admin' : dados.tipo || 'user';
+        const tipo = isFirstUser ? 'A' : dados.tipo || 'user';
         
         const senhaHash = await bcrypt.hash(dados.senha, 12);
         return await Usuario.create({
