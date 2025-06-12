@@ -8,14 +8,13 @@ const sequelize = new Sequelize({
   password: "",
   database: "controle_estoque",
   define: {
-    timestamps: true,
-    underscored: true,
+    timestamps: false,
+    underscored: false,
   },
 });
-
 sequelize
   .authenticate()
   .then(() => console.log("Conectado ao MySQL!"))
   .catch((err: any) => console.error("Erro na conexão:", err));
 
-module.exports = sequelize;
+export default sequelize;
