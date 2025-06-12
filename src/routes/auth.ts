@@ -1,9 +1,9 @@
+// src/routes/auth.ts
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { AuthController } from '../controllers/AuthController';
 
 const router = Router();
-const authController = new AuthController();
 
 /**
  * @swagger
@@ -53,7 +53,7 @@ router.post(
       .isIn(['A', 'U'])
       .withMessage('Tipo deve ser "A" para administrador ou "U" para usuário comum'),
   ],
-  authController.register
+  AuthController.registrar
 );
 
 /**
@@ -91,7 +91,23 @@ router.post(
     body('email').isEmail().withMessage('Email inválido'),
     body('senha').notEmpty().withMessage('Senha é obrigatória'),
   ],
-  authController.login
+  AuthController.login
 );
 
-export default router; 
+router.post(
+    '/recuperar-senha',
+    [
+        body('email').isEmail().withMessage('E-mail inválido')
+    ],
+    AuthController.solicitarRecuperacaoSenha
+);
+
+router.post(
+    '/resetar-senha',
+    [
+        body('token').notEmpty().withMessage('Token é obrigatório'),
+        body('novaSenha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
+    ],
+    AuthController.resetarSenha
+);
+export default router;

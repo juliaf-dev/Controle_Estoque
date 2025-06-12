@@ -12,7 +12,6 @@ const sequelize = new Sequelize({
     underscored: false,
   },
 });
-
 sequelize
   .authenticate()
   .then(() => console.log("Conectado ao MySQL!"))
