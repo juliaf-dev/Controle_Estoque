@@ -5,12 +5,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'gmail',
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false, // true se estiver usando porta 465
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     }
 });
+
 export const enviarEmailRecuperacao = async (email: string, token: string): Promise<void> => {
     try {
         const mailOptions = {
@@ -27,6 +30,7 @@ export const enviarEmailRecuperacao = async (email: string, token: string): Prom
         };
 
         await transporter.sendMail(mailOptions);
+        console.log('E-mail de recuperação enviado com sucesso.');
     } catch (error) {
         console.error('Erro ao enviar e-mail:', error);
         throw new Error('Falha ao enviar e-mail de recuperação');
