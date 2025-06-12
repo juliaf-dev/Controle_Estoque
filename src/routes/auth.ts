@@ -47,7 +47,7 @@ router.post(
   '/register',
   [
     body('email').isEmail().withMessage('Email inválido'),
-    body('senha').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 6 caracteres'),
+    body('senha').isLength({ min: 8 }).withMessage('A senha deve ter no mínimo 8 caracteres'),
     body('nome').notEmpty().withMessage('Nome é obrigatório'),
     body('tipo')
       .isIn(['A', 'U'])
@@ -106,7 +106,7 @@ router.post(
     '/resetar-senha',
     [
         body('token').notEmpty().withMessage('Token é obrigatório'),
-        body('novaSenha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
+        body('novaSenha').isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres')
     ],
     AuthController.resetarSenha
 );
