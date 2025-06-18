@@ -28,9 +28,7 @@ class CategoryController {
     }
   }
 
-  /**
-   * Busca uma categoria específica por ID
-   */
+  
   async show(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;

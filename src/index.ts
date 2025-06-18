@@ -10,7 +10,6 @@ import { initCategoriaModel } from "./models/Categoria";
 
 // Carrega as variáveis de ambiente
 dotenv.config();
-
 const app = express();
 
 // Middleware para processar JSON

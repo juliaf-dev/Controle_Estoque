@@ -8,7 +8,6 @@ export interface CategoriaAttributes {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
 export interface CategoriaCreationAttributes extends Omit<CategoriaAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Categoria extends Model<CategoriaAttributes, CategoriaCreationAttributes> implements CategoriaAttributes {

@@ -159,7 +159,6 @@ router.put('/categories/:id',
   ],
   categoryController.update
 );
-
 /**
  * @swagger
  * /categories/{id}:
