@@ -2,27 +2,33 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./config/swagger";
 import authRoutes from "./routes/auth";
+import categoryRoutes from "./routes/categories";
 import dotenv from "dotenv";
 import sequelize from "./database/database";
 import { initUsuarioModel } from "./models/Usuario";
+import { initCategoriaModel } from "./models/Categoria";
 import fornecedorRoutes from "./routes/fornecedor";
 
 // Carrega as variáveis de ambiente
 dotenv.config();
-
 const app = express();
 
 // Middleware para processar JSON
 app.use(express.json());
 
-// Inicializa o modelo
+// Inicializa os modelos
 initUsuarioModel(sequelize);
+initCategoriaModel(sequelize);
+
 // Documentação Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Rotas de autenticação
 app.use("/auth", authRoutes);
 app.use("/fornecedor", fornecedorRoutes);
+
+// Rotas de categorias
+app.use("/", categoryRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {
