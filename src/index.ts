@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth";
 import dotenv from "dotenv";
 import sequelize from "./database/database";
 import { initUsuarioModel } from "./models/Usuario";
+import fornecedorRoutes from "./routes/fornecedor";
 
 // Carrega as variáveis de ambiente
 dotenv.config();
@@ -21,6 +22,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Rotas de autenticação
 app.use("/auth", authRoutes);
+app.use("/fornecedor", fornecedorRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {

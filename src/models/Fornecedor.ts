@@ -33,6 +33,11 @@ class Fornecedor extends Model<FornecedorAttributes, FornecedorCreationAttribute
             }
         );
     }
+    static async apagar(id: number) {
+        return await Fornecedor.destroy({
+            where: { id }
+        });
+    }
         
 }
 
