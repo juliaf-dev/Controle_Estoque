@@ -8,8 +8,10 @@ import sequelize from "./database/database";
 import { initUsuarioModel } from "./models/Usuario";
 import { initCategoriaModel } from "./models/Categoria";
 import { initProdutoModel, associateProduto } from "./models/Produto";
+import { initClienteModel, associateCliente } from "./models/Cliente";
 import fornecedorRoutes from "./routes/fornecedor";
 import productRoutes from "./routes/products";
+import clientRoutes from "./routes/clients";
 import cors from "cors";
 
 // Carrega as variáveis de ambiente
@@ -31,7 +33,11 @@ app.use(cors({
 initUsuarioModel(sequelize);
 initCategoriaModel(sequelize);
 initProdutoModel(sequelize);
+initClienteModel(sequelize);
+
+// Associa os modelos
 associateProduto();
+associateCliente();
 
 // Documentação Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
@@ -45,6 +51,9 @@ app.use("/", categoryRoutes);
 
 // Rotas de produtos
 app.use("/", productRoutes);
+
+// Rotas de clientes
+app.use("/", clientRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {

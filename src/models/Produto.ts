@@ -1,5 +1,6 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import { Categoria } from './Categoria';
+import { Cliente } from './Cliente';
 
 export interface ProdutoAttributes {
   id?: number;
@@ -30,6 +31,12 @@ export class Produto extends Model<ProdutoAttributes, ProdutoCreationAttributes>
 
   // Associações
   public readonly categoria?: Categoria;
+  public readonly clientes?: Cliente[];
+
+  // Métodos de associação do Sequelize
+  public setClientes!: (clientes: number[]) => Promise<void>;
+  public addClientes!: (clientes: number[]) => Promise<void>;
+  public removeClientes!: (clientes: number[]) => Promise<void>;
 }
 
 export const initProdutoModel = (sequelize: Sequelize): void => {
@@ -88,6 +95,13 @@ export const associateProduto = (): void => {
   Produto.belongsTo(Categoria, {
     foreignKey: 'categoria_id',
     as: 'categoria',
+  });
+  
+  Produto.belongsToMany(Cliente, {
+    through: 'cliente_produtos',
+    foreignKey: 'produto_id',
+    otherKey: 'cliente_id',
+    as: 'clientes',
   });
 };
 
