@@ -7,18 +7,37 @@ import dotenv from "dotenv";
 import sequelize from "./database/database";
 import { initUsuarioModel } from "./models/Usuario";
 import { initCategoriaModel } from "./models/Categoria";
+import { initProdutoModel, associateProduto } from "./models/Produto";
+import { initClienteModel, associateCliente } from "./models/Cliente";
 import fornecedorRoutes from "./routes/fornecedor";
+import productRoutes from "./routes/products";
+import clientRoutes from "./routes/clients";
+import cors from "cors";
 
 // Carrega as variáveis de ambiente
 dotenv.config();
 const app = express();
-
 // Middleware para processar JSON
 app.use(express.json());
+
+// Configuração do CORS para autorizar o frontend
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://controle-estoque-u2ld.onrender.com"
+  ],
+  credentials: true
+}));
 
 // Inicializa os modelos
 initUsuarioModel(sequelize);
 initCategoriaModel(sequelize);
+initProdutoModel(sequelize);
+initClienteModel(sequelize);
+
+// Associa os modelos
+associateProduto();
+associateCliente();
 
 // Documentação Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
@@ -29,6 +48,12 @@ app.use("/fornecedor", fornecedorRoutes);
 
 // Rotas de categorias
 app.use("/", categoryRoutes);
+
+// Rotas de produtos
+app.use("/", productRoutes);
+
+// Rotas de clientes
+app.use("/", clientRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {
