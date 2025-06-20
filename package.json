@@ -8,6 +8,7 @@
     "build": "tsc",
     "dev": "nodemon src/index.ts"
   },
+  
   "keywords": [],
   "author": "",
   "license": "ISC",

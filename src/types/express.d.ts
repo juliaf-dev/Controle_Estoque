@@ -3,4 +3,5 @@ declare namespace Express {
     userId: number;
     userEmail: string;
   }
+  
 } 

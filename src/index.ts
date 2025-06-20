@@ -21,7 +21,7 @@ const app = express();
 app.use(express.json());
 
 // Configuração do CORS para autorizar o frontend
-app.use(cors({
+app.use(cors({ 
   origin: [
     "http://localhost:5173",
     "https://controle-estoque-u2ld.onrender.com"
