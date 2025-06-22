@@ -42,7 +42,16 @@ module.exports = {
       data_entrega: {
         type: Sequelize.DATE,
         allowNull: true
+      },
+      cliente_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'clientes',
+          key: 'id'
+        }
       }
+
     });
   },
 
