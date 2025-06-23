@@ -80,5 +80,15 @@ export const PedidoController = {
       console.error("Erro ao apagar pedido:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
     }
-  }
+  },
+
+  async listar(req: Request, res: Response): Promise<void> {
+    try {
+        const pedidos = await Pedido.findAll();
+        res.status(200).json(pedidos);
+    } catch (error) {
+        console.error("Erro ao listar pedidos:", error);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
+}
 };
