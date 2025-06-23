@@ -69,5 +69,16 @@ export const FornecedorController = {
             console.error("Erro ao tentar apagar o fornecedor:", error);
             res.status(500).json({ error: "Erro interno do servidor" });
         }
+    },
+
+    async listar(req: Request, res: Response): Promise<void> {
+    try {
+        const fornecedores = await Fornecedor.findAll();
+        res.status(200).json(fornecedores);
+    } catch (error) {
+        console.error("Erro ao listar fornecedores:", error);
+        res.status(500).json({ error: "Erro interno do servidor" });
     }
+}
+
 }
