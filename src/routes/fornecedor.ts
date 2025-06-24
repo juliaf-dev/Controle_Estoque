@@ -167,6 +167,7 @@ router.delete('/apagar/:id', authMiddleware, FornecedorController.apagar);
  *         description: Token não fornecido ou inválido
  */
 router.get('/listar', authMiddleware, FornecedorController.listar);
+router.get('/:id', authMiddleware, FornecedorController.buscarPorId);
 
 
 export default router;
