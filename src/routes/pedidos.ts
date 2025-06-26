@@ -137,4 +137,45 @@ router.put('/atualizar/:id', authMiddleware, [
  */
 router.delete('/apagar/:id', authMiddleware, PedidoController.apagar);
 
+/**
+ * @swagger
+ * /pedidos:
+ *   get:
+ *     summary: Listar todos os pedidos
+ *     tags: [Pedidos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   codigo:
+ *                     type: integer
+ *                   nome:
+ *                     type: string
+ *                   valor:
+ *                     type: number
+ *                   tipo:
+ *                     type: string
+ *                   produto_id:
+ *                     type: integer
+ *                   cliente_id:
+ *                     type: integer
+ *                   data_entrega:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Token não fornecido ou inválido
+ */
+router.get('/listar', authMiddleware, PedidoController.listar);
+router.get('/:id', authMiddleware, PedidoController.buscarPorId);
+
 export default router;

@@ -138,4 +138,36 @@ router.put(
  */
 router.delete('/apagar/:id', authMiddleware, FornecedorController.apagar);
 
+/**
+ * @swagger
+ * /fornecedores:
+ *   get:
+ *     summary: Listar todos os fornecedores
+ *     tags: [Fornecedores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de fornecedores retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   nome:
+ *                     type: string
+ *                   situacao:
+ *                     type: integer
+ *                     description: 0 = inativo, 1 = ativo
+ *       401:
+ *         description: Token não fornecido ou inválido
+ */
+router.get('/listar', authMiddleware, FornecedorController.listar);
+router.get('/:id', authMiddleware, FornecedorController.buscarPorId);
+
+
 export default router;

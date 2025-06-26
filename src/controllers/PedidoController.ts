@@ -22,7 +22,7 @@ export const PedidoController = {
         tipo,
         produto_id,
         data_entrega,
-        cliente_id
+        cliente_id,
       } = req.body;
 
       await Pedido.registrar({
@@ -32,7 +32,7 @@ export const PedidoController = {
         tipo,
         produto_id,
         data_entrega,
-        cliente_id
+        cliente_id,
       });
 
       res.status(201).json({ msg: "Pedido registrado com sucesso" });
@@ -56,7 +56,9 @@ export const PedidoController = {
       const resultado = await Pedido.atualizar(id, dados);
 
       if (resultado[0] === 0) {
-        res.status(404).json({ error: "Pedido não encontrado ou dados inalterados." });
+        res
+          .status(404)
+          .json({ error: "Pedido não encontrado ou dados inalterados." });
       } else {
         res.status(200).json({ msg: "Pedido atualizado com sucesso" });
       }
@@ -80,5 +82,43 @@ export const PedidoController = {
       console.error("Erro ao apagar pedido:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
     }
-  }
+  },
+
+  async listar(req: Request, res: Response): Promise<void> {
+    try {
+      const pedidos = await Pedido.findAll();
+      res.status(200).json(pedidos);
+    } catch (error) {
+      console.error("Erro ao listar pedidos:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  },
+
+  async buscarPorId(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const pedido = await Pedido.findByPk(id);
+
+      if (!pedido) {
+        res.status(404).json({ error: "Pedido não encontrado" });
+        return;
+      }
+
+      const agora = new Date();
+      let diasRestantes: number | null = null;
+      if (pedido.data_entrega) {
+        const dataEntrega = new Date(pedido.data_entrega);
+        const diffMs = dataEntrega.getTime() - agora.getTime();
+        diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      }
+
+      res.status(200).json({
+        ...pedido.toJSON(),
+        tempo_estimado_entrega_dias: diasRestantes,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar pedido:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  },
 };
