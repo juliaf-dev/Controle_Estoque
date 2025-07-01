@@ -29,14 +29,22 @@ const router = Router();
  *             required:
  *               - nome
  *               - situacao
+ *               - email
+ *               - telefone
+ *               - tempo_entrega
  *             properties:
  *               nome:
  *                 type: string
- *                 example: Fornecedor Teste
  *               situacao:
  *                 type: integer
  *                 enum: [0, 1]
- *                 example: 1
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               telefone:
+ *                 type: string
+ *               tempo_entrega:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Fornecedor criado com sucesso
@@ -53,6 +61,9 @@ router.post(
   [
     body('nome').notEmpty().withMessage('Nome é obrigatório'),
     body('situacao').isInt({ min: 0, max: 1 }).withMessage('Situação deve ser 0 ou 1'),
+    body('email').isEmail().withMessage('Email inválido'),
+    body('telefone').notEmpty().withMessage('Telefone é obrigatório'),
+    body('tempo_entrega').isInt({ min: 1 }).withMessage('Tempo de entrega deve ser um número inteiro positivo'),
   ],
   FornecedorController.registrar
 );
@@ -61,7 +72,7 @@ router.post(
  * @swagger
  * /atualizar/{id}:
  *   put:
- *     summary: Atualiza um fornecedor
+ *     summary: Atualiza um fornecedor existente
  *     tags: [Fornecedores]
  *     security:
  *       - bearerAuth: []
@@ -81,25 +92,32 @@ router.post(
  *             required:
  *               - nome
  *               - situacao
+ *               - email
+ *               - telefone
+ *               - tempo_entrega
  *             properties:
  *               nome:
  *                 type: string
- *                 example: Nome Atualizado
  *               situacao:
  *                 type: integer
  *                 enum: [0, 1]
- *                 example: 1
+ *               email:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               tempo_entrega:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Fornecedor atualizado com sucesso
  *       400:
  *         description: Erro de validação
  *       401:
- *         description: Token ausente ou inválido
+ *         description: Token inválido
  *       404:
  *         description: Fornecedor não encontrado
  *       500:
- *         description: Erro interno do servidor
+ *         description: Erro interno
  */
 router.put(
   '/atualizar/:id',
@@ -107,6 +125,9 @@ router.put(
   [
     body('nome').notEmpty().withMessage('Nome é obrigatório'),
     body('situacao').isInt({ min: 0, max: 1 }).withMessage('Situação deve ser 0 ou 1'),
+    body('email').isEmail().withMessage('Email inválido'),
+    body('telefone').notEmpty().withMessage('Telefone é obrigatório'),
+    body('tempo_entrega').isInt({ min: 1 }).withMessage('Tempo de entrega deve ser um número inteiro positivo'),
   ],
   FornecedorController.atualizar
 );
@@ -125,7 +146,7 @@ router.put(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID do fornecedor a ser removido
+ *         description: ID do fornecedor
  *     responses:
  *       200:
  *         description: Fornecedor removido com sucesso
@@ -134,15 +155,15 @@ router.put(
  *       404:
  *         description: Fornecedor não encontrado
  *       500:
- *         description: Erro interno do servidor
+ *         description: Erro interno
  */
 router.delete('/apagar/:id', authMiddleware, FornecedorController.apagar);
 
 /**
  * @swagger
- * /fornecedores:
+ * /listar:
  *   get:
- *     summary: Listar todos os fornecedores
+ *     summary: Lista todos os fornecedores
  *     tags: [Fornecedores]
  *     security:
  *       - bearerAuth: []
@@ -162,12 +183,38 @@ router.delete('/apagar/:id', authMiddleware, FornecedorController.apagar);
  *                     type: string
  *                   situacao:
  *                     type: integer
- *                     description: 0 = inativo, 1 = ativo
+ *                   email:
+ *                     type: string
+ *                   telefone:
+ *                     type: string
+ *                   tempo_entrega:
+ *                     type: integer
  *       401:
- *         description: Token não fornecido ou inválido
+ *         description: Token inválido
  */
 router.get('/listar', authMiddleware, FornecedorController.listar);
-router.get('/:id', authMiddleware, FornecedorController.buscarPorId);
 
+/**
+ * @swagger
+ * /{id}:
+ *   get:
+ *     summary: Buscar fornecedor por ID
+ *     tags: [Fornecedores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do fornecedor
+ *     responses:
+ *       200:
+ *         description: Fornecedor encontrado
+ *       404:
+ *         description: Fornecedor não encontrado
+ */
+router.get('/:id', authMiddleware, FornecedorController.buscarPorId);
 
 export default router;

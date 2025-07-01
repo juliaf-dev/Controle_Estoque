@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import sequelize from "../database/database";
 import Fornecedor, { initFornecedorModel } from "../models/Fornecedor";
 import { validationResult } from "express-validator";
+
 initFornecedorModel(sequelize);
 
 export const FornecedorController = {
@@ -13,8 +14,9 @@ export const FornecedorController = {
         return;
       }
 
-      const { nome, situacao } = req.body;
-      await Fornecedor.registrar({ nome, situacao });
+      const { nome, situacao, email, telefone, tempo_entrega } = req.body;
+      await Fornecedor.registrar({ nome, situacao, email, telefone, tempo_entrega });
+
       res.status(201).json({ msg: "Fornecedor cadastrado com sucesso" });
     } catch (error) {
       console.error("Erro ao registrar fornecedor:", error);
@@ -30,10 +32,10 @@ export const FornecedorController = {
         return;
       }
 
-      const { nome, situacao } = req.body;
+      const { nome, situacao, email, telefone, tempo_entrega } = req.body;
       const id = parseInt(req.params.id);
 
-      const resultado = await Fornecedor.atualizar({ id, nome, situacao });
+      const resultado = await Fornecedor.atualizar({ id, nome, situacao, email, telefone, tempo_entrega });
 
       if (resultado[0] === 0) {
         res.status(404).json({
