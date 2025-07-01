@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(cors({ 
   origin: [
     "http://localhost:5173",
-    "https://controle-estoque-u2ld.onrender.com"
+    "https://frontend-controle-estoque-ruby.vercel.app/"
   ],
   credentials: true
 }));
