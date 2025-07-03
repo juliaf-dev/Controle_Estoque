@@ -5,6 +5,32 @@ import ClienteController from '../controllers/ClienteController';
 const router = Router();
 const clienteController = new ClienteController();
 
+/**
+ * @swagger
+ * /clients:
+ *   get:
+ *     summary: Lista todos os clientes
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Página para paginação
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Limite de itens por página
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Busca textual
+ *     responses:
+ *       200:
+ *         description: Lista de clientes retornada com sucesso
+ */
 // Listar clientes
 router.get('/clients',
   [
@@ -15,12 +41,67 @@ router.get('/clients',
   clienteController.index
 );
 
+/**
+ * @swagger
+ * /clients/{id}:
+ *   get:
+ *     summary: Busca um cliente por ID
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do cliente
+ *     responses:
+ *       200:
+ *         description: Cliente encontrado
+ *       404:
+ *         description: Cliente não encontrado
+ */
 // Buscar cliente por ID
 router.get('/clients/:id',
   [param('id').isInt().withMessage('ID deve ser um número inteiro')],
   clienteController.show
 );
 
+/**
+ * @swagger
+ * /clients:
+ *   post:
+ *     summary: Cria um novo cliente
+ *     tags: [Clients]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nome
+ *               - email
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               endereco:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               produtos:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       201:
+ *         description: Cliente criado com sucesso
+ *       400:
+ *         description: Erros de validação
+ */
 // Criar cliente
 router.post('/clients',
   [
@@ -35,6 +116,50 @@ router.post('/clients',
   clienteController.store
 );
 
+/**
+ * @swagger
+ * /clients/{id}:
+ *   put:
+ *     summary: Atualiza um cliente existente
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do cliente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               endereco:
+ *                 type: string
+ *               cpf:
+ *                 type: string
+ *               ativo:
+ *                 type: boolean
+ *               produtos:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente atualizado com sucesso
+ *       400:
+ *         description: Erros de validação
+ *       404:
+ *         description: Cliente não encontrado
+ */
 // Atualizar cliente
 router.put('/clients/:id',
   [
@@ -50,12 +175,65 @@ router.put('/clients/:id',
   clienteController.update
 );
 
+/**
+ * @swagger
+ * /clients/{id}:
+ *   delete:
+ *     summary: Remove um cliente (soft delete)
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do cliente
+ *     responses:
+ *       200:
+ *         description: Cliente removido com sucesso
+ *       404:
+ *         description: Cliente não encontrado
+ */
 // Remover cliente (soft delete)
 router.delete('/clients/:id',
   [param('id').isInt().withMessage('ID deve ser um número inteiro')],
   clienteController.delete
 );
 
+/**
+ * @swagger
+ * /clients/{id}/produtos:
+ *   post:
+ *     summary: Adiciona produtos a um cliente
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do cliente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - produtos
+ *             properties:
+ *               produtos:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Produtos adicionados ao cliente com sucesso
+ *       400:
+ *         description: Erros de validação
+ *       404:
+ *         description: Cliente não encontrado
+ */
 // Adicionar produtos a um cliente
 router.post('/clients/:id/produtos',
   [
@@ -65,6 +243,40 @@ router.post('/clients/:id/produtos',
   clienteController.addProdutos
 );
 
+/**
+ * @swagger
+ * /clients/{id}/produtos:
+ *   delete:
+ *     summary: Remove produtos de um cliente
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do cliente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - produtos
+ *             properties:
+ *               produtos:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Produtos removidos do cliente com sucesso
+ *       400:
+ *         description: Erros de validação
+ *       404:
+ *         description: Cliente não encontrado
+ */
 // Remover produtos de um cliente
 router.delete('/clients/:id/produtos',
   [
