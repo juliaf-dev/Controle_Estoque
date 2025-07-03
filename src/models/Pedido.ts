@@ -2,13 +2,17 @@ import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 interface PedidoAttributes {
   id: number;
-  codigo: number;
   nome: string;
   valor: number;
   tipo: string;
-  produto_id: number;
+  produto_id?: number | null;
+  quantidade: number;
   data_entrega?: Date | null;
-  cliente_id: number;
+  cliente_id?: number | null;
+  fornecedor_id?: number | null;
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface PedidoCreationAttributes extends Optional<PedidoAttributes, 'id' | 'data_entrega'> {}
@@ -16,13 +20,17 @@ interface PedidoCreationAttributes extends Optional<PedidoAttributes, 'id' | 'da
 class Pedido extends Model<PedidoAttributes, PedidoCreationAttributes>
   implements PedidoAttributes {
   public id!: number;
-  public codigo!: number;
   public nome!: string;
   public valor!: number;
   public tipo!: string;
-  public produto_id!: number;
+  public produto_id!: number | null;
+  public quantidade!: number;
   public data_entrega!: Date | null;
-  public cliente_id!: number;
+  public cliente_id!: number | null;
+  public fornecedor_id!: number | null;
+  public status!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
   // Método para registrar
   static async registrar(dados: PedidoCreationAttributes) {
@@ -54,11 +62,6 @@ export function initPedidoModel(sequelize: Sequelize) {
         primaryKey: true,
         allowNull: false,
       },
-      codigo: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unique: true,
-      },
       nome: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -73,13 +76,18 @@ export function initPedidoModel(sequelize: Sequelize) {
       },
       produto_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'produtos',
           key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
+        onDelete: 'SET NULL',
+      },
+      quantidade: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
       },
       data_entrega: {
         type: DataTypes.DATE,
@@ -87,13 +95,28 @@ export function initPedidoModel(sequelize: Sequelize) {
       },
       cliente_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'clientes',
           key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT',
+        onDelete: 'SET NULL',
+      },
+      fornecedor_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'fornecedores',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'a-caminho',
       },
     },
     {

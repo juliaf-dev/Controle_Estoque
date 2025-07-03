@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { PedidoController } from '../controllers/PedidoController';
-import { authMiddleware } from '../middlewares/auth';
 
 const router = Router();
 
@@ -18,8 +17,6 @@ const router = Router();
  *   post:
  *     summary: Registrar um novo pedido
  *     tags: [Pedidos]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -54,16 +51,20 @@ const router = Router();
  *         description: Pedido registrado com sucesso
  *       400:
  *         description: Erro de validação
- *       401:
- *         description: Token inválido ou não fornecido
  */
-router.post('/registrar', authMiddleware, [
-  body('codigo').isInt().withMessage('Código deve ser um número inteiro'),
+router.post('/registrar', [
   body('nome').notEmpty().withMessage('Nome é obrigatório'),
   body('valor').isFloat().withMessage('Valor deve ser um número'),
   body('tipo').notEmpty().withMessage('Tipo é obrigatório'),
-  body('produto_id').isInt().withMessage('Produto ID deve ser um número inteiro'),
-  body('cliente_id').isInt().withMessage('Cliente ID deve ser um número inteiro'),
+  body('produto_id').optional().isInt().withMessage('Produto ID deve ser um número inteiro'),
+  body('quantidade').isInt().withMessage('Quantidade deve ser um número inteiro'),
+  body('fornecedor_id').optional().isInt().withMessage('Fornecedor ID deve ser um número inteiro'),
+  body('cliente_id').optional().custom((value) => {
+    if (value !== null && value !== undefined && !Number.isInteger(Number(value))) {
+      throw new Error('Cliente ID deve ser um número inteiro');
+    }
+    return true;
+  }),
 ], PedidoController.registrar);
 
 /**
@@ -72,8 +73,6 @@ router.post('/registrar', authMiddleware, [
  *   put:
  *     summary: Atualizar um pedido existente
  *     tags: [Pedidos]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -106,7 +105,7 @@ router.post('/registrar', authMiddleware, [
  *       404:
  *         description: Pedido não encontrado
  */
-router.put('/atualizar/:id', authMiddleware, [
+router.put('/atualizar/:id', [
   body('nome').optional().notEmpty().withMessage('Nome não pode ser vazio'),
   body('valor').optional().isFloat().withMessage('Valor deve ser um número'),
   body('tipo').optional().notEmpty().withMessage('Tipo não pode ser vazio'),
@@ -120,8 +119,6 @@ router.put('/atualizar/:id', authMiddleware, [
  *   delete:
  *     summary: Apagar um pedido
  *     tags: [Pedidos]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -135,7 +132,49 @@ router.put('/atualizar/:id', authMiddleware, [
  *       404:
  *         description: Pedido não encontrado
  */
-router.delete('/apagar/:id', authMiddleware, PedidoController.apagar);
+router.delete('/apagar/:id', PedidoController.apagar);
+
+/**
+ * @swagger
+ * /pedidos/receber/{id}:
+ *   put:
+ *     summary: Marcar pedido como recebido e atualizar/adicionar produto ao estoque
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID do pedido
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido marcado como recebido e produto atualizado/adicionado
+ *       404:
+ *         description: Pedido não encontrado
+ */
+router.put('/receber/:id', PedidoController.receber);
+
+/**
+ * @swagger
+ * /pedidos/cancelar/{id}:
+ *   put:
+ *     summary: Cancelar um pedido
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID do pedido
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido cancelado com sucesso
+ *       404:
+ *         description: Pedido não encontrado
+ */
+router.put('/cancelar/:id', PedidoController.cancelar);
 
 /**
  * @swagger
@@ -143,8 +182,6 @@ router.delete('/apagar/:id', authMiddleware, PedidoController.apagar);
  *   get:
  *     summary: Listar todos os pedidos
  *     tags: [Pedidos]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de pedidos retornada com sucesso
@@ -172,10 +209,8 @@ router.delete('/apagar/:id', authMiddleware, PedidoController.apagar);
  *                   data_entrega:
  *                     type: string
  *                     format: date-time
- *       401:
- *         description: Token não fornecido ou inválido
  */
-router.get('/listar', authMiddleware, PedidoController.listar);
-router.get('/:id', authMiddleware, PedidoController.buscarPorId);
+router.get('/listar', PedidoController.listar);
+router.get('/:id', PedidoController.buscarPorId);
 
 export default router;

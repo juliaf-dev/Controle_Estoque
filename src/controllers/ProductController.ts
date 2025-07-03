@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { Produto } from '../models/Produto';
 import { Categoria } from '../models/Categoria';
 
@@ -26,7 +26,6 @@ class ProductController {
       if (search) {
         whereClause[Op.or] = [
           { nome: { [Op.like]: `%${search}%` } },
-          { codigo: { [Op.like]: `%${search}%` } }
         ];
       }
 
@@ -117,20 +116,7 @@ class ProductController {
         return;
       }
 
-      const { codigo, nome, categoria_id, quantidade_estoque, valor, descricao } = req.body;
-
-      // Verifica se já existe um produto com o mesmo código
-      const produtoExistente = await Produto.findOne({
-        where: { codigo }
-      });
-
-      if (produtoExistente) {
-        res.status(409).json({
-          success: false,
-          error: 'Já existe um produto com este código'
-        });
-        return;
-      }
+      const { nome, categoria_id, quantidade_estoque, valor, vendapreco, descricao } = req.body;
 
       // Verifica se a categoria existe
       const categoria = await Categoria.findByPk(categoria_id);
@@ -143,11 +129,11 @@ class ProductController {
       }
 
       const novoProduto = await Produto.create({
-        codigo,
         nome: nome.trim(),
         categoria_id,
         quantidade_estoque: Number(quantidade_estoque) || 0,
         valor: Number(valor),
+        vendapreco: Number(vendapreco) || 0,
         descricao: descricao?.trim() || null,
         ativo: true
       });
@@ -193,7 +179,7 @@ class ProductController {
       }
 
       const { id } = req.params;
-      const { codigo, nome, categoria_id, quantidade_estoque, valor, descricao, ativo } = req.body;
+      const { nome, categoria_id, quantidade_estoque, valor, vendapreco, descricao, ativo } = req.body;
 
       const produto = await Produto.findByPk(id);
 
@@ -203,24 +189,6 @@ class ProductController {
           error: 'Produto não encontrado'
         });
         return;
-      }
-
-      // Se o código foi alterado, verifica se já existe outro produto com o mesmo código
-      if (codigo && codigo !== produto.codigo) {
-        const produtoExistente = await Produto.findOne({
-          where: { 
-            codigo,
-            id: { [Op.ne]: id }
-          }
-        });
-
-        if (produtoExistente) {
-          res.status(409).json({
-            success: false,
-            error: 'Já existe um produto com este código'
-          });
-          return;
-        }
       }
 
       // Se a categoria foi alterada, verifica se ela existe
@@ -236,11 +204,11 @@ class ProductController {
       }
 
       await produto.update({
-        codigo: codigo || produto.codigo,
         nome: nome?.trim() || produto.nome,
         categoria_id: categoria_id || produto.categoria_id,
         quantidade_estoque: quantidade_estoque !== undefined ? Number(quantidade_estoque) : produto.quantidade_estoque,
         valor: valor !== undefined ? Number(valor) : produto.valor,
+        vendapreco: vendapreco !== undefined ? Number(vendapreco) : produto.vendapreco,
         descricao: descricao?.trim() || produto.descricao,
         ativo: ativo !== undefined ? ativo : produto.ativo
       });
@@ -405,6 +373,55 @@ class ProductController {
       });
     } catch (error) {
       console.error('Erro ao buscar produtos com estoque baixo:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
+   * Busca fornecedores de um produto
+   */
+  async getProductSuppliers(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      // Verifica se o produto existe
+      const produto = await Produto.findByPk(id);
+      if (!produto) {
+        res.status(404).json({
+          success: false,
+          error: 'Produto não encontrado'
+        });
+        return;
+      }
+
+      // Busca os fornecedores através da tabela de relacionamento
+      const sequelize = Produto.sequelize;
+      const fornecedores = await sequelize!.query(`
+        SELECT f.id, f.nome, f.email, f.telefone, f.tempo_entrega, f.situacao
+        FROM fornecedores f
+        INNER JOIN produto_fornecedores pf ON f.id = pf.fornecedor_id
+        WHERE pf.produto_id = :produtoId AND f.situacao = 1
+        ORDER BY f.nome
+      `, {
+        replacements: { produtoId: id },
+        type: QueryTypes.SELECT
+      });
+
+      res.json({
+        success: true,
+        data: {
+          produto: {
+            id: produto.id,
+            nome: produto.nome
+          },
+          fornecedores: fornecedores
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao buscar fornecedores do produto:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor'
