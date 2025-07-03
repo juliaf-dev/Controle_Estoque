@@ -9,9 +9,11 @@ import { initUsuarioModel } from "./models/Usuario";
 import { initCategoriaModel } from "./models/Categoria";
 import { initProdutoModel, associateProduto } from "./models/Produto";
 import { initClienteModel, associateCliente } from "./models/Cliente";
+import { initPedidoModel } from "./models/Pedido";
 import fornecedorRoutes from "./routes/fornecedor";
 import productRoutes from "./routes/products";
 import clientRoutes from "./routes/clients";
+import pedidoRoutes from "./routes/pedidos";
 import cors from "cors";
 
 // Carrega as variáveis de ambiente
@@ -34,6 +36,7 @@ initUsuarioModel(sequelize);
 initCategoriaModel(sequelize);
 initProdutoModel(sequelize);
 initClienteModel(sequelize);
+initPedidoModel(sequelize);
 
 // Associa os modelos
 associateProduto();
@@ -54,6 +57,9 @@ app.use("/", productRoutes);
 
 // Rotas de clientes
 app.use("/", clientRoutes);
+
+// Rotas de pedidos
+app.use("/pedidos", pedidoRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {

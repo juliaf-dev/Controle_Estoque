@@ -24,7 +24,6 @@ router.get('/products/:id',
 // Criar produto
 router.post('/products',
   [
-    body('codigo').isInt().withMessage('Código é obrigatório e deve ser inteiro'),
     body('nome').notEmpty().isString().withMessage('Nome é obrigatório'),
     body('categoria_id').isInt().withMessage('Categoria é obrigatória e deve ser inteira'),
     body('quantidade_estoque').isInt({ min: 0 }).withMessage('Quantidade deve ser um número inteiro >= 0'),
@@ -38,7 +37,6 @@ router.post('/products',
 router.put('/products/:id',
   [
     param('id').isInt().withMessage('ID deve ser um número inteiro'),
-    body('codigo').optional().isInt().withMessage('Código deve ser inteiro'),
     body('nome').optional().isString(),
     body('categoria_id').optional().isInt(),
     body('quantidade_estoque').optional().isInt({ min: 0 }),
@@ -69,6 +67,12 @@ router.patch('/products/:id/estoque',
 router.get('/products/low-stock',
   [query('limite').optional().isInt({ min: 0 })],
   productController.lowStock
+);
+
+// Buscar fornecedores de um produto
+router.get('/products/:id/fornecedores',
+  [param('id').isInt().withMessage('ID deve ser um número inteiro')],
+  productController.getProductSuppliers
 );
 
 export default router; 
