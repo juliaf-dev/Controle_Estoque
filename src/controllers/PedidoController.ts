@@ -157,7 +157,7 @@ export const PedidoController = {
           status: pedidoData.status,
           tipo: pedidoData.tipo,
           data: new Date((pedidoData as any).createdAt).toLocaleDateString('pt-BR'),
-          createdAt: pedidoData.createdAt,
+          createdAt: pedido.createdAt,
           dataRecebimento: calcularDataRecebimento(fornecedor?.tempo_entrega || 7),
           produto: produto?.nome || pedidoData.nome,
           categoria: categoria?.nome || 'N/A',

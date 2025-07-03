@@ -26,7 +26,8 @@ app.use(express.json());
 app.use(cors({ 
   origin: [
     "http://localhost:5173",
-    "https://frontend-controle-estoque-ruby.vercel.app/"
+    "https://frontend-controle-estoque-ruby.vercel.app/",
+    "https://frontend-controle-estoque-3r4j.vercel.app/"
   ],
   credentials: true
 }));

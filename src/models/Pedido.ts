@@ -29,6 +29,8 @@ class Pedido extends Model<PedidoAttributes, PedidoCreationAttributes>
   public cliente_id!: number | null;
   public fornecedor_id!: number | null;
   public status!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
   // Método para registrar
   static async registrar(dados: PedidoCreationAttributes) {
